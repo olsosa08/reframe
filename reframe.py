@@ -29,7 +29,7 @@ class Relation(pd.DataFrame):
             super().__init__(filepath)
         else:
             print('help')
-            
+
     def project(self, cols):
         """returns a new Relation with only the specified columns
 
@@ -62,7 +62,7 @@ class Relation(pd.DataFrame):
             if name not in self.columns:
                 raise ValueError("'{}' is not a valid attribute name in relation".format(name))
         return Relation(self[cols].drop_duplicates())
-    
+
     def query(self, q):
         """return a new relation with tuples matching the query condition
 
@@ -188,8 +188,15 @@ class Relation(pd.DataFrame):
         if not col_list:
             raise ValueError("The two relations must have some columns in common")
         return Relation(pd.merge(self,other,how='inner',on=list(col_list)))
-
-
+        """
+        Creates a new relation that is all of the records that are match in both relations.
+        It merges the table on the right into the table on the left and removes all that do not match.
+         """
+    def semijoin(self, other):
+        col_list = [x for x in self.columns if x in other.columns]
+        if not col_list:
+            raise ValueError("The two relations must have some columns in common")
+        return Relation(pd.merge(self,other,how='left',on=list(col_list)))
 
     def union(self,other):
         """ Take two Relations with the same columns and put them together top to bottom
@@ -328,7 +335,7 @@ class Relation(pd.DataFrame):
         return Relation(res.drop_duplicates())
 
     def groupby(self,cols):
-        """ Collapse a relation containing one row per unique value in the given group by attributes.
+        """Collapse a relation containing one row per unique value in the given group by attributes.
 
         The groupby operator is always used in conjunction with an aggregate operator.
 
@@ -358,6 +365,8 @@ class Relation(pd.DataFrame):
         5        Oceania          28
         6  South America          14
 
+        The groupby operator has a helper function that contains the different aggregate operators.
+        The description of each operator is in the helper function.
 
         """
         res = super().groupby(cols)
